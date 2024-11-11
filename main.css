@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap');
+
+/*******w******** 
+    Page post css
+****************/
+.form-container{
+    justify-content:left;
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+}
+
+#submitbutton{
+    position: relative;
+    left: 150px;
+    top: 5px;
+}
+
+textarea{
+    resize: none;
+    height: 200px;
+    width: 400px;
+}
+
+/*******w******** 
+    Menu css
+****************/
+.logo{
+    width: 125px;
+    height: auto;
+    position: relative;
+    left: 100px;
+}
+
+.header{
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+
+.navigation{
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    bottom: 80px;
+}
+
+.navigation ul a{
+    text-decoration: none;
+    color: #000;
+    font-family: Fraunces;
+    padding: 20px;
+}
+.donutbanner{
+    width: 1535px;
+    height: 235px;
+}
+
+.donutbannerimg{
+    position: relative;
+    right: 10px;
+}
