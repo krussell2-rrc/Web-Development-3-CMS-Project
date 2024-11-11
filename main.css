@@ -60,3 +60,7 @@ textarea{
     position: relative;
     right: 10px;
 }
+
+body{
+    background-color: ghostwhite;
+}

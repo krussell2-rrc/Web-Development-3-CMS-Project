@@ -24,8 +24,8 @@
         <ul>
             <a href="">HOME</a>
             <a href="">MENU</a>
-            <a href="">ABOUT US</a>
             <a href="">NEWS</a>
+            <a href="">ABOUT US</a>
         </ul>
     </nav>
 </div>

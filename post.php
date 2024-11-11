@@ -18,12 +18,21 @@ use Gumlet\ImageResize;
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     $content = filter_input(INPUT_POST, 'content', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+    $imagePath = file_upload_path($_FILES['file']['name']);
 
     if(strlen($title) >= 1 && strlen($content) >= 1){
-        
+        $pagesQuery = "INSERT INTO pages (title, content) values (:title, :content)";
+        $imagesQuery = "INSERT INTO images (image_path) values (:imagePath)";
+        $pagesStatement = $db->prepare($pagesQuery);
+        $imagesStatement = $db->prepare($imagesQuery);
+        $pagesStatement->bindValue(':title', $title);
+        $pagesStatement->bindValue(':content', $content);
+        $imagesStatement->bindValue(':imagePath', $imagePath);
+
+        $pagesStatement->execute();
+        $imagesStatement->execute();
     }
 }
-
 
 // Builds a path string that uses slashes appropriate for our OS.
 function file_upload_path($original_filename, $upload_subfolder_name = 'uploads'){
@@ -110,7 +119,7 @@ function file_is_an_image_or_pdf($temporary_path, $new_path){
     </nav>
 </div>
     <h1>New Page Post</h1>
-    <form action="category.php" method="post" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data">
     <div class="form-container">
     <label id="titlelabel">Title:</label>
         <input name="title" id="titletextbox" type="text" >
