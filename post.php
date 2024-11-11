@@ -19,18 +19,42 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     $content = filter_input(INPUT_POST, 'content', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     $imagePath = file_upload_path($_FILES['file']['name']);
+    $imageName = pathinfo($_FILES['file']['name'], PATHINFO_FILENAME);
+    $imageExtension = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
 
     if(strlen($title) >= 1 && strlen($content) >= 1){
-        $pagesQuery = "INSERT INTO pages (title, content) values (:title, :content)";
-        $imagesQuery = "INSERT INTO images (image_path) values (:imagePath)";
-        $pagesStatement = $db->prepare($pagesQuery);
-        $imagesStatement = $db->prepare($imagesQuery);
-        $pagesStatement->bindValue(':title', $title);
-        $pagesStatement->bindValue(':content', $content);
-        $imagesStatement->bindValue(':imagePath', $imagePath);
+        if(isset($_POST['category'])){
+            $category = $_POST['category'];
 
-        $pagesStatement->execute();
-        $imagesStatement->execute();
+            switch($category){
+                case "menu":
+                $menuItemQuery = "INSERT INTO menuitems (item_name, description) values (:item_name, :description)";
+                $menuItemStatement = $db->prepare($menuItemQuery);
+                $menuItemStatement->bindValue(':item_name', $title);
+                $menuItemStatement->bindValue(':description', $content);
+                $menuItemStatement->execute();
+
+                $menuItemID = $db->lastInsertId();
+                
+                $resized_paths = [
+                    ['image_path' => $imagePath],
+                    ['image_path' => 'uploads/' . $imageName . '_medium' . '.' . $imageExtension],
+                    ['image_path' => 'uploads/' . $imageName . '_thumbnail' . '.' . $imageExtension]
+                ];
+
+                $menuItemImageQuery = "INSERT INTO images (menuitem_id, image_path, image_name) values (:menuitem_id, :image_path, :image_name)";
+                $menuItemImageStatement = $db->prepare($menuItemImageQuery);
+                $menuItemImageStatement->bindValue(':menuitem_id', $menuItemID);
+                $menuItemImageStatement->bindValue(':image_name', $imageName);
+
+                foreach($resized_paths as $resized_path){
+                    $menuItemImageStatement->bindValue(':image_path', $resized_path['image_path']);
+                    $menuItemImageStatement->execute();
+                }
+
+                header("Location: menu.php");
+            }
+        }
     }
 }
 
@@ -88,7 +112,7 @@ function file_is_an_image_or_pdf($temporary_path, $new_path){
             $image_name = pathinfo($_FILES['file']['name'], PATHINFO_FILENAME);
 
             $mediumImage = new ImageResize($new_file_path);
-            $mediumImage->resizeToWidth(400);
+            $mediumImage->crop(250, 250, true, ImageResize::CROPCENTER);;
             $mediumImage_filePath = 'uploads/' . $image_name . '_medium' . '.' . $actual_image_extension;
             $mediumImage->save($mediumImage_filePath);
 

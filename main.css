@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap');
 
+body{
+    background-color: ghostwhite;
+}
+
 /*******w******** 
     Page post css
 ****************/
@@ -29,6 +33,7 @@ textarea{
     width: 125px;
     height: auto;
     position: relative;
+    top: 20px;
     left: 100px;
 }
 
@@ -47,10 +52,20 @@ textarea{
 
 .navigation ul a{
     text-decoration: none;
-    color: #000;
+    color: #7fb6ec;
     font-family: Fraunces;
     padding: 20px;
+    font-size: 20px;
 }
+
+.navigation ul a::after{
+    content: "\007C"; 
+    margin-left: 5px;
+    color: #d8af8c;
+    position: relative;
+    left: 20px;
+}
+
 .donutbanner{
     width: 1535px;
     height: 235px;
@@ -59,8 +74,4 @@ textarea{
 .donutbannerimg{
     position: relative;
     right: 10px;
-}
-
-body{
-    background-color: ghostwhite;
 }
