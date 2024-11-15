@@ -1,7 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Courgette&display=swap');
 
-body{
-    background-color: ghostwhite;
+/*******w******** 
+    Overall website css
+****************/
+body {
+    margin: 0;
+    padding: 0;
+    background: url(defaultimages/photo-1525947088131-b701cd0f6dc3.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+
+.logo{
+    top: 15px;
+    width: 90px;
+    height: auto;
+    position: absolute;
+    left: 100px;
 }
 
 /*******w******** 
@@ -29,39 +46,34 @@ textarea{
 /*******w******** 
     Menu css
 ****************/
-.logo{
-    width: 125px;
-    height: auto;
-    position: relative;
-    top: 20px;
-    left: 100px;
-}
 
 .header{
     align-items: center;
     display: flex;
     justify-content: center;
+    background-image: url(defaultimages/cozy-coffee-shop-interior-with-cappuccino-focus-rustic-wooden-table-warm-ambient-lighting_896686-39141.png);
+    width: 100%;
+    height: 120px;
 }
 
 .navigation{
     display: flex;
     flex-direction: row;
     position: relative;
-    bottom: 80px;
 }
 
 .navigation ul a{
     text-decoration: none;
-    color: #7fb6ec;
+    color: #000;
     font-family: Fraunces;
     padding: 20px;
-    font-size: 20px;
+    font-size: 13px;
 }
 
-.navigation ul a::after{
+.navigation ul a:not(:last-child)::after{
     content: "\007C"; 
     margin-left: 5px;
-    color: #d8af8c;
+    color: #fff;
     position: relative;
     left: 20px;
 }
@@ -75,3 +87,133 @@ textarea{
     position: relative;
     right: 10px;
 }
+
+.menuItemsPageContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 20px;
+}
+
+.thisMonthsMenuBanner{
+    background-image: url(defaultimages/cozy-coffee-shop-interior-with-cappuccino-focus-rustic-wooden-table-warm-ambient-lighting_896686-39141.png);
+    position: relative;
+    bottom: 30px;
+    height: 100px;
+    width: 100%;
+    object-fit: fill;
+}
+
+.menuItemImageContainer {
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: center; 
+    gap: 20px;
+    width: 100%;
+}
+
+.menuItem {
+    display: flex;
+    flex-direction: column;
+    opacity: 0; 
+    transform: translateX(-50px); 
+    animation: slideIn 0.8s ease-out forwards;
+    animation-delay: 0.1s;
+    box-sizing: border-box;
+    padding-bottom: 20px;
+}
+
+@keyframes slideIn {
+    0% {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.menuItemText {
+    background-color: ghostwhite;
+    border: #fff 1px solid;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    overflow:auto;
+    width: 400px;
+    height: 115px;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.menuItemName {
+    font-family: Fraunces;
+    color: brown;
+    text-align: left;
+    margin-left: 5px;
+    font-style: italic;
+    font-size: 18px;
+
+}
+
+.menuItemDescription {
+    font-family: Fraunces;
+    color: #000;
+    padding-left: 5px;
+    text-align: left;
+    font-weight: lighter;
+}
+
+.menuItemImage {
+    border: ghostwhite 1px solid;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+
+.thisMonthsMenu{
+    background-color: #d8af8c;
+    font-family: Fraunces;
+    position: relative;
+    left: 30px;
+    top: 5px;
+    font-size: 30px;
+    text-decoration: underline;
+    width: 100px;
+    position: relative;
+    color: #000;
+}
+
+.theCozyCafeMenuBanner {
+    background-color: #d8af8c;
+    width: 100%;
+    padding: 10px 0;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+
+.theCozyCafeMenu {
+    color: #fff;
+    font-family:'Times New Roman', Times, serif;
+    font-size: 30px;
+    padding-left: 30px;
+    margin: 0; 
+    font-weight: bolder;
+    letter-spacing: 0.2em;
+}
+
+.menuItemCost{
+    color: #000;
+    text-decoration: none;
+    font-style: normal;
+    position: absolute;
+    font-family: Fraunces;
+    font-size: 13px;
+    left: 335px;
+    top: 10px;
+}
+
+
+

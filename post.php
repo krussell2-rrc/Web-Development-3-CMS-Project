@@ -18,24 +18,34 @@ use Gumlet\ImageResize;
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     $content = filter_input(INPUT_POST, 'content', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+    $cost = filter_input(INPUT_POST, 'menuItemCost', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+    $category_id = filter_input(INPUT_POST, 'categories', FILTER_SANITIZE_NUMBER_INT);
     $imagePath = file_upload_path($_FILES['file']['name']);
     $imageName = pathinfo($_FILES['file']['name'], PATHINFO_FILENAME);
     $imageExtension = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
 
     if(strlen($title) >= 1 && strlen($content) >= 1){
-        if(isset($_POST['category'])){
-            $category = $_POST['category'];
-
-            switch($category){
+        if(isset($_POST['postType'])){
+            $postType = $_POST['postType'];
+            switch($postType){
                 case "menu":
-                $menuItemQuery = "INSERT INTO menuitems (item_name, description) values (:item_name, :description)";
+
+                $menuItemQuery = "INSERT INTO menuitems (item_name, description, cost, category_id) values (:item_name, :description, :cost, :category_id)";
                 $menuItemStatement = $db->prepare($menuItemQuery);
                 $menuItemStatement->bindValue(':item_name', $title);
                 $menuItemStatement->bindValue(':description', $content);
+                $menuItemStatement->bindValue(':cost', $cost);
+                $menuItemStatement->bindValue(':category_id', $category_id);
                 $menuItemStatement->execute();
 
                 $menuItemID = $db->lastInsertId();
-                
+
+                $newPageQuery = "INSERT INTO pages (menuItem_id, page_title) VALUES (:menuItem_id, :page_title)";
+                $newPageQueryStatement = $db->prepare($newPageQuery);
+                $newPageQueryStatement->bindValue(':menuItem_id', $menuItemID);
+                $newPageQueryStatement->bindValue(':page_title', $title);
+                $newPageQueryStatement->execute();
+
                 $resized_paths = [
                     ['image_path' => $imagePath],
                     ['image_path' => 'uploads/' . $imageName . '_medium' . '.' . $imageExtension],
@@ -112,7 +122,8 @@ function file_is_an_image_or_pdf($temporary_path, $new_path){
             $image_name = pathinfo($_FILES['file']['name'], PATHINFO_FILENAME);
 
             $mediumImage = new ImageResize($new_file_path);
-            $mediumImage->crop(250, 250, true, ImageResize::CROPCENTER);;
+            $mediumImage->quality_png = 100;
+            $mediumImage->crop(400, 300);
             $mediumImage_filePath = 'uploads/' . $image_name . '_medium' . '.' . $actual_image_extension;
             $mediumImage->save($mediumImage_filePath);
 
@@ -122,6 +133,12 @@ function file_is_an_image_or_pdf($temporary_path, $new_path){
             $thumbnailImage->save($thumbnailImage_filePath);
         }
     }
+
+// Fetching categories from the database
+$categoriesQuery = "SELECT category_id, category_name FROM categories";
+$categoriesStatement = $db->prepare($categoriesQuery);
+$categoriesStatement->execute();
+$categories = $categoriesStatement->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -149,10 +166,24 @@ function file_is_an_image_or_pdf($temporary_path, $new_path){
         <input name="title" id="titletextbox" type="text" >
         <label id="contentlabel">Content:</label>
         <textarea name="content" id="contenttextarea"></textarea>
-        <input type="radio" name="category" value="menu" id="menubutton">
-        <label for="menubutton">New Menu Post</label>
+        <input type="radio" name="postType" value="menu" id="menuPostType">
+        <label for="menuPostType">New Menu Post</label>
+        <?php
+            echo '<label id="categoriesLabel" for="categoriesDropDown">Categories:</label>';
+            echo '<select name="categoriesDropDown" id="categoriesDropDown">';
+            foreach ($categories as $category) {
+                echo '<option value="' . $category['category_id'] . '">' . $category['category_name'] . '</option>';
+            }
+            echo '</select>';
+            echo '<'
+            ?>
+        <label id="costLabel" for="menuItemCostInput" style="display:none;">Cost:</label>
+        <input type="text" name="menuItemCostInput" id="menuItemCostInput" style="display:none;">
         <input type="file" name="file" id="file">
-        <input type="submit" id="submitbutton" value="Create Post">
+        <input type="submit" id="submitButton" value="Create Post">
+        </div>
+    </form>
+    <script src="post.js"></script>
     </div>
 </form>
 </body>
