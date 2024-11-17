@@ -4,7 +4,7 @@
     
     Name: Kareem Russell
     Date: November 10, 2024
-    Description: PHP For Post Page of the Blog.
+    Description: PHP For Post Page of the CMS.
 
 ****************/
 
@@ -13,6 +13,11 @@ require('connect.php');
 require 'C:\xampp\htdocs\Assignments\WebDevFinalProject\php-image-resize-master\php-image-resize-master\lib\ImageResize.php';
 require 'C:\xampp\htdocs\Assignments\WebDevFinalProject\php-image-resize-master\php-image-resize-master\lib\ImageResizeException.php';
 use Gumlet\ImageResize;
+// Fetching categories from the database
+$categoriesQuery = "SELECT category_id, category_name FROM categories";
+$categoriesStatement = $db->prepare($categoriesQuery);
+$categoriesStatement->execute();
+$categories = $categoriesStatement->fetchAll();
 
 // Adding posted content to the database
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
@@ -133,12 +138,6 @@ function file_is_an_image_or_pdf($temporary_path, $new_path){
             $thumbnailImage->save($thumbnailImage_filePath);
         }
     }
-
-// Fetching categories from the database
-$categoriesQuery = "SELECT category_id, category_name FROM categories";
-$categoriesStatement = $db->prepare($categoriesQuery);
-$categoriesStatement->execute();
-$categories = $categoriesStatement->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -159,32 +158,32 @@ $categories = $categoriesStatement->fetchAll();
         </ul>
     </nav>
 </div>
-    <h1>New Page Post</h1>
-    <form method="POST" enctype="multipart/form-data">
-    <div class="form-container">
-    <label id="titlelabel">Title:</label>
-        <input name="title" id="titletextbox" type="text" >
-        <label id="contentlabel">Content:</label>
-        <textarea name="content" id="contenttextarea"></textarea>
-        <input type="radio" name="postType" value="menu" id="menuPostType">
-        <label for="menuPostType">New Menu Post</label>
-        <?php
-            echo '<label id="categoriesLabel" for="categoriesDropDown">Categories:</label>';
-            echo '<select name="categoriesDropDown" id="categoriesDropDown">';
-            foreach ($categories as $category) {
-                echo '<option value="' . $category['category_id'] . '">' . $category['category_name'] . '</option>';
-            }
-            echo '</select>';
-            echo '<'
-            ?>
-        <label id="costLabel" for="menuItemCostInput" style="display:none;">Cost:</label>
-        <input type="text" name="menuItemCostInput" id="menuItemCostInput" style="display:none;">
-        <input type="file" name="file" id="file">
-        <input type="submit" id="submitButton" value="Create Post">
-        </div>
-    </form>
-    <script src="post.js"></script>
-    </div>
+<h1>New Page Post</h1>
+<form method="POST" enctype="multipart/form-data">
+<div class="form-container">
+<label id="titlelabel">Title:</label>
+    <input name="title" id="titletextbox" type="text" >
+    <label id="contentlabel">Content:</label>
+    <textarea name="content" id="contenttextarea"></textarea>
+    <input type="radio" name="postType" value="menu" id="menuPostType">
+    <label for="menuPostType">New Menu Post</label>
+    <?php
+        echo '<label id="categoriesLabel" for="categoriesDropDown">Categories:</label>';
+        echo '<select name="categoriesDropDown" id="categoriesDropDown">';
+        foreach ($categories as $category) {
+            echo '<option value="' . $category['category_id'] . '">' . $category['category_name'] . '</option>';
+        }
+        echo '</select>';
+    ?>
+    <label id="costLabel" for="menuItemCostInput" style="display:none;">Cost:</label>
+    <input type="text" name="menuItemCostInput" id="menuItemCostInput" style="display:none;">
+            
+    <input type="file" name="file" id="file">
+    <input type="submit" id="submitButton" value="Create Post">
+</div>
+</form>
+<script src="post.js"></script>
+</div>
 </form>
 </body>
 </html>

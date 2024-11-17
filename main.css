@@ -215,5 +215,14 @@ textarea{
     top: 10px;
 }
 
+.menuPostHREF {
+    text-decoration: none;
+    color: inherit; 
+}
+
+.menuPostHREF:hover {
+    text-decoration: underline; 
+}
+
 
 
