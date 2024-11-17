@@ -122,8 +122,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 <?php
     echo '<div class="menuItemImageContainer">';
     foreach($images as $image){
-        echo '<div class="menuItem">';
         echo '<a class="menuPostHREF" href="fullMenuPost.php?menuItemId=' . $image['menuitem_id'] . '">';
+        echo '<div class="menuItem">';
         echo '<img class="menuItemImage" src="' . $image['image_path'] . '" alt="Image">';
         foreach($menu_items as $menu_item){
             if($image['menuitem_id'] == $menu_item['menuitem_id']){
