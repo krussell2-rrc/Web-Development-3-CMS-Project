@@ -10,6 +10,7 @@
 
 require('authenticate.php');
 require('connect.php');
+
 require 'C:\xampp\htdocs\Assignments\WebDevFinalProject\php-image-resize-master\php-image-resize-master\lib\ImageResize.php';
 require 'C:\xampp\htdocs\Assignments\WebDevFinalProject\php-image-resize-master\php-image-resize-master\lib\ImageResizeException.php';
 use Gumlet\ImageResize;
@@ -175,6 +176,7 @@ function file_is_an_image_or_pdf($temporary_path, $new_path){
         }
         echo '</select>';
     ?>
+    <a id="categoryHREF" href="category.php">Edit Categories & Create New Categories</a>
     <label id="costLabel" for="menuItemCostInput" style="display:none;">Cost:</label>
     <input type="text" name="menuItemCostInput" id="menuItemCostInput" style="display:none;">
             

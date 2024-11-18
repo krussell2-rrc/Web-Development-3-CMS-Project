@@ -10,6 +10,8 @@ body {
     background: url(defaultimages/photo-1525947088131-b701cd0f6dc3.png);
     background-repeat: no-repeat;
     background-size: cover;
+    height: 100%;
+    box-sizing: border-box;
 }
 
 
@@ -41,6 +43,10 @@ textarea{
     resize: none;
     height: 200px;
     width: 400px;
+}
+
+#categoryHREF{
+    color: blue;
 }
 
 /*******w******** 
@@ -220,8 +226,34 @@ textarea{
 }
 
 .menuPostHREF:hover {
-    text-decoration: underline; 
+    transform: scale(1.03); 
+    transition:  0.5s;
+    cursor: pointer;  
 }
+
+.commentsInput{
+    resize: none;
+    height: 200px;
+    width: 400px;
+}
+
+#commentsForm{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    position: relative;
+    top: 30px;
+    left: 10px;
+}
+
+#commentsContainer{
+    position: relative;
+    top: 10px;
+    left: 10px;
+}
+
+
 
 
 
