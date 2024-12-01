@@ -24,8 +24,10 @@ $categories = $categoriesStatement->fetchAll();
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     $content = filter_input(INPUT_POST, 'content', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-    $cost = filter_input(INPUT_POST, 'menuItemCost', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-    $category_id = filter_input(INPUT_POST, 'categories', FILTER_SANITIZE_NUMBER_INT);
+    $cost = filter_input(INPUT_POST, 'menuItemCostInput', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+    $validated_cost = filter_var($cost, FILTER_VALIDATE_FLOAT);
+    $category_id = filter_input(INPUT_POST, 'categoriesDropDown', FILTER_SANITIZE_NUMBER_INT);
+    $validated_categoryId = filter_var($category_id, FILTER_VALIDATE_INT);
     $imagePath = file_upload_path($_FILES['file']['name']);
     $imageName = pathinfo($_FILES['file']['name'], PATHINFO_FILENAME);
     $imageExtension = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
@@ -36,12 +38,13 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             switch($postType){
                 case "menu":
 
+            if(isset($_FILES['file']) && $_FILES['file']['error'] === 0){
                 $menuItemQuery = "INSERT INTO menuitems (item_name, description, cost, category_id) values (:item_name, :description, :cost, :category_id)";
                 $menuItemStatement = $db->prepare($menuItemQuery);
                 $menuItemStatement->bindValue(':item_name', $title);
                 $menuItemStatement->bindValue(':description', $content);
-                $menuItemStatement->bindValue(':cost', $cost);
-                $menuItemStatement->bindValue(':category_id', $category_id);
+                $menuItemStatement->bindValue(':cost', $validated_cost);
+                $menuItemStatement->bindValue(':category_id', $validated_categoryId);
                 $menuItemStatement->execute();
 
                 $menuItemID = $db->lastInsertId();
@@ -67,8 +70,10 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                     $menuItemImageStatement->bindValue(':image_path', $resized_path['image_path']);
                     $menuItemImageStatement->execute();
                 }
-
+                
                 header("Location: menu.php");
+            }
+
             }
         }
     }

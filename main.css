@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Courgette&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Ahom&display=swap');
 
 /*******w******** 
     Overall website css
@@ -7,20 +8,17 @@
 body {
     margin: 0;
     padding: 0;
-    background: url(defaultimages/photo-1525947088131-b701cd0f6dc3.png);
-    background-repeat: no-repeat;
+    background: url(defaultimages/high-resolution-wood-background-sk0k1ko8b0lxyyf4.png);
+    background-repeat: repeat;
     background-size: cover;
     height: 100%;
-    box-sizing: border-box;
 }
 
-
 .logo{
-    top: 15px;
     width: 90px;
     height: auto;
-    position: absolute;
-    left: 100px;
+    position: relative;
+    right: 250px;
 }
 
 /*******w******** 
@@ -66,6 +64,7 @@ textarea{
     display: flex;
     flex-direction: row;
     position: relative;
+    left: 50PX;
 }
 
 .navigation ul a{
@@ -99,6 +98,7 @@ textarea{
     justify-content: center;
     align-items: center;
     padding-bottom: 20px;
+    padding-top: 30px;
 }
 
 .thisMonthsMenuBanner{
@@ -220,6 +220,20 @@ textarea{
     top: 10px;
 }
 
+.sortedBy{
+    text-align: center;
+    color:black;
+    font-size: 45px;
+    letter-spacing: 0.1em;
+    text-decoration: underline;
+    padding-bottom: 40px;
+    margin: 0;
+    font-family: Fraunces;
+    height: 20PX;
+    position: relative;
+    font-style: italic;
+}
+
 .menuPostHREF {
     text-decoration: none;
     color: inherit; 
@@ -229,6 +243,17 @@ textarea{
     transform: scale(1.03); 
     transition:  0.5s;
     cursor: pointer;  
+}
+
+#categoryForm{
+    position: relative;
+    left: 10px;
+    padding-bottom: 20px;
+}
+
+#applyButton{
+    position: relative;
+    left: 2px;
 }
 
 .commentsInput{
@@ -253,7 +278,36 @@ textarea{
     left: 10px;
 }
 
+#searchForm{
+    position: relative;
+    left: 300px;
+}
 
+#menuSearch{
+    border: 1px solid #ccc; 
+    border-radius: 10px; 
+    outline: none; 
+    height: 28px;
+    width: 200px;
+}
+
+#menuSearch::placeholder{
+    font-style: italic;
+}
+
+#searchButton{
+    background: none; 
+    border: none;
+    padding: 0; 
+    margin: 0;
+    cursor: pointer;
+}
+
+#menuSearchCategories{
+    position: absolute;
+    top: 5px;
+    right: 30px;
+}
 
 
 

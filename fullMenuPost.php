@@ -9,6 +9,7 @@
 require('connect.php');
 
 $menuItemId = filter_input(INPUT_GET, 'menuItemId', FILTER_SANITIZE_NUMBER_INT);
+$validated_menuItemId = filter_var($menuItemId, FILTER_VALIDATE_INT);
 
 if(isset($_POST['submitReview'])){
     if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])){
@@ -18,7 +19,7 @@ if(isset($_POST['submitReview'])){
         if(strlen($guest_username) >= 1 && strlen($guest_review) >= 1){
             $guestCommentQuery = "INSERT INTO reviews (guest_username, review, menuItem_id) VALUES (:guest_username, :review, :menuItem_id)";
             $guestCommentStatement = $db->prepare($guestCommentQuery);
-            $guestCommentStatement->bindValue(':menuItem_id', $menuItemId, PDO::PARAM_INT);
+            $guestCommentStatement->bindValue(':menuItem_id', $validated_menuItemId, PDO::PARAM_INT);
             $guestCommentStatement->bindValue(':guest_username', $guest_username);
             $guestCommentStatement->bindValue(':review', $guest_review);
             $guestCommentStatement->execute();
@@ -30,7 +31,7 @@ if(isset($_POST['submitReview'])){
         if(strlen($user_username) >= 1 && strlen($user_review) >=1){
             $userCommentQuery = "INSERT INTO reviews (user_username, review, menuItem_id) VALUES (:user_username, :review, :menuItem_id)";
             $userCommentQuery = $db->prepare($userCommentQuery);
-            $userCommentQuery->bindValue(':menuItem_id', $menuItemId, PDO::PARAM_INT);
+            $userCommentQuery->bindValue(':menuItem_id', $validated_menuItemId, PDO::PARAM_INT);
             $userCommentQuery->bindValue(':user_username', $user_username);
             $userCommentQuery->bindValue(':review', $user_review );
             $userCommentQuery->execute();
@@ -53,7 +54,7 @@ $commentsQuery = "SELECT user_username, guest_username, review, menuItem_id, cre
                 WHERE menuItem_id = :menuitem_id
                 ORDER BY created_at DESC";
 $commentsStatement = $db->prepare($commentsQuery);
-$commentsStatement->bindValue(':menuitem_id', $menuItemId, PDO::PARAM_INT);
+$commentsStatement->bindValue(':menuitem_id', $validated_menuItemId, PDO::PARAM_INT);
 $commentsStatement->execute();
 $comments = $commentsStatement->fetchAll();
 
@@ -62,7 +63,7 @@ $query = "SELECT menuitem_id, item_name, description, cost
             WHERE menuitem_id = :menuitem_id";
 
 $statement = $db->prepare($query);
-$statement->bindValue(':menuitem_id', $menuItemId, PDO::PARAM_INT);
+$statement->bindValue(':menuitem_id', $validated_menuItemId, PDO::PARAM_INT);
 $statement->execute();
 $menuPosts = $statement->fetchAll();
 
@@ -74,7 +75,7 @@ $imageQuery = "SELECT images.image_path, images.menuitem_id
         LIMIT 1";
 
 $imageStatement = $db->prepare($imageQuery);
-$imageStatement->bindValue(':menuitem_id', $menuItemId, PDO::PARAM_INT);
+$imageStatement->bindValue(':menuitem_id', $validated_menuItemId, PDO::PARAM_INT);
 $imageStatement->execute();
 $images = $imageStatement->fetchAll();
 ?>
@@ -97,7 +98,7 @@ $images = $imageStatement->fetchAll();
     }
 
     foreach($images as $image){
-        if($image['menuitem_id'] == $menuItemId){
+        if($image['menuitem_id'] == $validated_menuItemId){
             echo '<img class="menuItemImage" src="' . $image['image_path'] . '" alt="Image">';
         }
     }
@@ -119,7 +120,7 @@ $images = $imageStatement->fetchAll();
 <?php
     echo '<div id=commentsContainer>';
         foreach($comments as $comment){
-            if($comment['menuItem_id'] == $menuItemId){
+            if($comment['menuItem_id'] == $validated_menuItemId){
                 if($comment['user_username']){
                     echo '<h1 class="user_username">' . $comment['user_username'] . '</h1>';
                     echo '<p class="reviewPostTime">' . $comment['created_at'] . '</p>';
