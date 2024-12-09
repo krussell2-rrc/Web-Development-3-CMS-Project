@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <?php
 
 /*******w******** 
@@ -23,7 +24,7 @@ $categories = $categoriesStatement->fetchAll();
 // Adding posted content to the database
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-    $content = filter_input(INPUT_POST, 'content', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+    $content = $_POST['content'];
     $cost = filter_input(INPUT_POST, 'menuItemCostInput', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
     $validated_cost = filter_var($cost, FILTER_VALIDATE_FLOAT);
     $category_id = filter_input(INPUT_POST, 'categoriesDropDown', FILTER_SANITIZE_NUMBER_INT);
@@ -37,43 +38,41 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             $postType = $_POST['postType'];
             switch($postType){
                 case "menu":
+                if(isset($_FILES['file']) && $_FILES['file']['error'] === 0){
+                    $menuItemQuery = "INSERT INTO menuitems (item_name, description, cost, category_id) values (:item_name, :description, :cost, :category_id)";
+                    $menuItemStatement = $db->prepare($menuItemQuery);
+                    $menuItemStatement->bindValue(':item_name', $title);
+                    $menuItemStatement->bindValue(':description', $content);
+                    $menuItemStatement->bindValue(':cost', $validated_cost);
+                    $menuItemStatement->bindValue(':category_id', $validated_categoryId);
+                    $menuItemStatement->execute();
 
-            if(isset($_FILES['file']) && $_FILES['file']['error'] === 0){
-                $menuItemQuery = "INSERT INTO menuitems (item_name, description, cost, category_id) values (:item_name, :description, :cost, :category_id)";
-                $menuItemStatement = $db->prepare($menuItemQuery);
-                $menuItemStatement->bindValue(':item_name', $title);
-                $menuItemStatement->bindValue(':description', $content);
-                $menuItemStatement->bindValue(':cost', $validated_cost);
-                $menuItemStatement->bindValue(':category_id', $validated_categoryId);
-                $menuItemStatement->execute();
+                    $menuItemID = $db->lastInsertId();
 
-                $menuItemID = $db->lastInsertId();
+                    $newPageQuery = "INSERT INTO pages (menuItem_id, page_title) VALUES (:menuItem_id, :page_title)";
+                    $newPageQueryStatement = $db->prepare($newPageQuery);
+                    $newPageQueryStatement->bindValue(':menuItem_id', $menuItemID);
+                    $newPageQueryStatement->bindValue(':page_title', $title);
+                    $newPageQueryStatement->execute();
 
-                $newPageQuery = "INSERT INTO pages (menuItem_id, page_title) VALUES (:menuItem_id, :page_title)";
-                $newPageQueryStatement = $db->prepare($newPageQuery);
-                $newPageQueryStatement->bindValue(':menuItem_id', $menuItemID);
-                $newPageQueryStatement->bindValue(':page_title', $title);
-                $newPageQueryStatement->execute();
+                    $resized_paths = [
+                        ['image_path' => $imagePath],
+                        ['image_path' => 'uploads/' . $imageName . '_medium' . '.' . $imageExtension],
+                        ['image_path' => 'uploads/' . $imageName . '_thumbnail' . '.' . $imageExtension]
+                    ];
 
-                $resized_paths = [
-                    ['image_path' => $imagePath],
-                    ['image_path' => 'uploads/' . $imageName . '_medium' . '.' . $imageExtension],
-                    ['image_path' => 'uploads/' . $imageName . '_thumbnail' . '.' . $imageExtension]
-                ];
+                    $menuItemImageQuery = "INSERT INTO images (menuitem_id, image_path, image_name) values (:menuitem_id, :image_path, :image_name)";
+                    $menuItemImageStatement = $db->prepare($menuItemImageQuery);
+                    $menuItemImageStatement->bindValue(':menuitem_id', $menuItemID);
+                    $menuItemImageStatement->bindValue(':image_name', $imageName);
 
-                $menuItemImageQuery = "INSERT INTO images (menuitem_id, image_path, image_name) values (:menuitem_id, :image_path, :image_name)";
-                $menuItemImageStatement = $db->prepare($menuItemImageQuery);
-                $menuItemImageStatement->bindValue(':menuitem_id', $menuItemID);
-                $menuItemImageStatement->bindValue(':image_name', $imageName);
-
-                foreach($resized_paths as $resized_path){
-                    $menuItemImageStatement->bindValue(':image_path', $resized_path['image_path']);
-                    $menuItemImageStatement->execute();
+                    foreach($resized_paths as $resized_path){
+                        $menuItemImageStatement->bindValue(':image_path', $resized_path['image_path']);
+                        $menuItemImageStatement->execute();
+                    }
+                    
+                    header("Location: menu.php");
                 }
-                
-                header("Location: menu.php");
-            }
-
             }
         }
     }
@@ -146,7 +145,6 @@ function file_is_an_image_or_pdf($temporary_path, $new_path){
     }
 ?>
 
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -154,43 +152,54 @@ function file_is_an_image_or_pdf($temporary_path, $new_path){
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="main.css">
     <title>New Post</title>
+    <script src="https://cdn.tiny.cloud/1/820gg2umfmem63zoi1rxljkbeur1qnneg18i5m4u764kk8pi/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
 </head>
 <body>
-<div id="postblogpost">
-    <nav class="blognav">
-        <ul>
-            <li><a href="index.php">Home</a></li>
-            <li><a href="post.php">New Post</a></li>
-        </ul>
-    </nav>
-</div>
 <h1>New Page Post</h1>
 <form method="POST" enctype="multipart/form-data">
-<div class="form-container">
-<label id="titlelabel">Title:</label>
-    <input name="title" id="titletextbox" type="text" >
-    <label id="contentlabel">Content:</label>
-    <textarea name="content" id="contenttextarea"></textarea>
-    <input type="radio" name="postType" value="menu" id="menuPostType">
-    <label for="menuPostType">New Menu Post</label>
-    <?php
-        echo '<label id="categoriesLabel" for="categoriesDropDown">Categories:</label>';
-        echo '<select name="categoriesDropDown" id="categoriesDropDown">';
-        foreach ($categories as $category) {
-            echo '<option value="' . $category['category_id'] . '">' . $category['category_name'] . '</option>';
-        }
-        echo '</select>';
-    ?>
-    <a id="categoryHREF" href="category.php">Edit Categories & Create New Categories</a>
-    <label id="costLabel" for="menuItemCostInput" style="display:none;">Cost:</label>
-    <input type="text" name="menuItemCostInput" id="menuItemCostInput" style="display:none;">
-            
-    <input type="file" name="file" id="file">
-    <input type="submit" id="submitButton" value="Create Post">
-</div>
+    <div class="postFormContainer">
+        <label id="titlelabel" for="titletextbox">Title:</label>
+        <input name="title" id="titletextbox" type="text" >
+
+        <label id="contentlabel" for="contenttextarea">Content:</label>
+        <textarea name="content" id="contenttextarea"></textarea>
+        <!-- TinyMCE Initialization -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                tinymce.init({
+                    selector: '#contenttextarea', // Targeting the specific textarea
+                    plugins: [
+                        'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount'
+                    ],
+                    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+                });
+            });
+        </script>
+
+        <input type="radio" name="postType" value="menu" id="menuPostType">
+        <label for="menuPostType">New Menu Post</label>
+
+        <?php
+            echo '<label id="categoriesLabel" for="categoriesDropDown">Categories:</label>';
+            echo '<select name="categoriesDropDown" id="categoriesDropDown">';
+            foreach ($categories as $category) {
+                echo '<option value="' . $category['category_id'] . '">' . $category['category_name'] . '</option>';
+            }
+            echo '</select>';
+        ?>
+
+        <a id="categoryHREF" href="category.php">Edit Categories & Create New Categories</a>
+        <label id="costLabel" for="menuItemCostInput" style="display:none;">Cost:</label>
+        <input type="text" name="menuItemCostInput" id="menuItemCostInput" style="display:none;">
+
+        <input type="file" name="file" id="file">
+        <input type="submit" id="submitButton" value="Create Post">
+    </div>
 </form>
+
 <script src="post.js"></script>
-</div>
-</form>
 </body>
 </html>
+
+
+

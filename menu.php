@@ -14,20 +14,36 @@ $categoriesStatement = $db->prepare($categoriesQuery);
 $categoriesStatement->execute();
 $categories = $categoriesStatement->fetchAll();
 
+// Applying pagination to items
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$rows = 6;
+$offset = ($page - 1) * $rows;
+
+$totalRowsQuery = "SELECT COUNT(*) FROM menuitems";
+$totalRows = $db->query($totalRowsQuery)->fetchColumn();
+$totalPages = ceil($totalRows / $rows);
+
 // Getting default menu items without any sorting from the database
-$menuItemQuery = "SELECT menuitem_id, item_name, description, cost FROM menuitems LIMIT 15";
+$menuItemQuery = "SELECT menuitem_id, item_name, description, cost FROM menuitems LIMIT :limit OFFSET :offset";
 
 $imageQuery = "SELECT images.image_path, images.menuitem_id
         FROM images
         LEFT JOIN menuitems
         ON images.menuitem_id = menuitems.menuitem_id
         WHERE images.image_path LIKE '%_medium%'
-        LIMIT 15";
+        LIMIT :limit OFFSET :offset";
     
 $menuItemStatement = $db->prepare($menuItemQuery);
 $imageStatement = $db->prepare($imageQuery);
+
+$menuItemStatement->bindValue(':limit', $rows, PDO::PARAM_INT);
+$menuItemStatement->bindValue(':offset', $offset, PDO::PARAM_INT);
+$imageStatement->bindValue(':limit', $rows, PDO::PARAM_INT);
+$imageStatement->bindValue(':offset', $offset, PDO::PARAM_INT);
+
 $menuItemStatement->execute();
 $imageStatement->execute();
+
 $menu_items = $menuItemStatement->fetchAll();
 $images = $imageStatement->fetchAll();
 
@@ -49,14 +65,14 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         "SELECT menuitem_id, item_name, description, cost, category_id 
         FROM menuitems
         WHERE category_id = :category_id
-        LIMIT 10";
+        LIMIT :limit OFFSET :offset";
 
         $imageQuery = 
         "SELECT images.image_path, images.menuitem_id
         FROM images
         LEFT JOIN menuitems ON images.menuitem_id = menuitems.menuitem_id
         WHERE images.image_path LIKE '%_medium%' AND menuitems.category_id = :category_id
-        LIMIT 10";
+        LIMIT :limit OFFSET :offset";
 
         $menuItemStatement = $db->prepare($menuItemQuery);
         $imageStatement = $db->prepare($imageQuery);
@@ -65,6 +81,11 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         $menuItemStatement->bindParam(':category_id', $validated_categoryId, PDO::PARAM_INT);
         $imageStatement->bindParam(':category_id', $validated_categoryId, PDO::PARAM_INT);
         $categoryStatement->bindParam(':category_id', $validated_categoryId, PDO::PARAM_INT);
+
+        $menuItemStatement->bindValue(':limit', $rows, PDO::PARAM_INT);
+        $menuItemStatement->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $imageStatement->bindValue(':limit', $rows, PDO::PARAM_INT);
+        $imageStatement->bindValue(':offset', $offset, PDO::PARAM_INT);
 
         $menuItemStatement->execute();
         $imageStatement->execute();
@@ -84,14 +105,14 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             "SELECT menuitem_id, item_name, description, cost, category_id
             FROM menuitems
             WHERE item_name LIKE :item_name
-            LIMIT 10";
+            LIMIT :limit OFFSET :offset";
     
             $imageQuery = 
             "SELECT images.image_path, images.menuitem_id
             FROM images
             LEFT JOIN menuitems ON images.menuitem_id = menuitems.menuitem_id
             WHERE images.image_path LIKE '%_medium%' AND menuitems.item_name LIKE :item_name
-            LIMIT 10";
+            LIMIT :limit OFFSET :offset";
 
             $menuItemStatement = $db->prepare($menuItemQuery);
             $imageStatement = $db->prepare($imageQuery);
@@ -99,6 +120,11 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             $menuItemStatement->bindParam(':item_name', $searchTerm, PDO::PARAM_STR);
             $imageStatement->bindParam(':item_name', $searchTerm, PDO::PARAM_STR);
 
+            $menuItemStatement->bindValue(':limit', $rows, PDO::PARAM_INT);
+            $menuItemStatement->bindValue(':offset', $offset, PDO::PARAM_INT);
+            $imageStatement->bindValue(':limit', $rows, PDO::PARAM_INT);
+            $imageStatement->bindValue(':offset', $offset, PDO::PARAM_INT);
+            
             $menuItemStatement->execute();
             $imageStatement->execute();
     
@@ -109,22 +135,28 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             "SELECT menuitem_id, item_name, description, cost, category_id
             FROM menuitems
             WHERE item_name LIKE :item_name AND category_id = :category_id
-            LIMIT 10";
+            LIMIT :limit OFFSET :offset";
     
             $imageQuery = 
             "SELECT images.image_path, images.menuitem_id
             FROM images
             LEFT JOIN menuitems ON images.menuitem_id = menuitems.menuitem_id
             WHERE images.image_path LIKE '%_medium%' AND menuitems.item_name LIKE :item_name AND menuitems.category_id = :category_id
-            LIMIT 10";
+            LIMIT :limit OFFSET :offset";
 
             $menuItemStatement = $db->prepare($menuItemQuery);
             $imageStatement = $db->prepare($imageQuery);
 
             $menuItemStatement->bindParam(':item_name', $searchTerm, PDO::PARAM_STR);
             $imageStatement->bindParam(':item_name', $searchTerm, PDO::PARAM_STR);
+
             $menuItemStatement->bindParam(':category_id', $validated_categoryId, PDO::PARAM_INT);
             $imageStatement->bindParam(':category_id', $validated_categoryId, PDO::PARAM_INT);
+
+            $menuItemStatement->bindValue(':limit', $rows, PDO::PARAM_INT);
+            $menuItemStatement->bindValue(':offset', $offset, PDO::PARAM_INT);
+            $imageStatement->bindValue(':limit', $rows, PDO::PARAM_INT);
+            $imageStatement->bindValue(':offset', $offset, PDO::PARAM_INT);
 
             $menuItemStatement->execute();
             $imageStatement->execute();
@@ -143,16 +175,17 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="main.css">
-    <title>Cozy Cafe Menu</title>
+    <title>Menu</title>
 </head>
-<body>
+<body class="menuBody">
 <div class="header">
-<img class="logo" src="defaultimages/cozycafe-logo.png" alt="The Cozy Café Logo">    <nav class="navigation">
-    <ul>
-        <a href="">HOME</a>
-        <a href="">MENU</a>
-        <a href="">NEWS</a>
-        <a href="">ABOUT US</a>
+<img class="logo" src="defaultimages/cozycafe-logo.png" alt="The Cozy Café Logo">
+    <nav class="navigation">
+        <ul>
+            <a href="">HOME</a>
+            <a href="">MENU</a>
+            <a href="">NEWS</a>
+            <a href="">ABOUT US</a>
         </ul>
     </nav>
     <form id="searchForm" action="<?php $_SERVER['PHP_SELF'] ?>" method="post">
@@ -174,11 +207,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 <div class="theCozyCafeMenuBanner">
     <p class ="theCozyCafeMenu">THE COZY CAFÉ MENU</p>
 </div>
-<div class="thisMonthsMenuBanner">
-    <p class ="thisMonthsMenu">THIS MONTH'S MENU:</p>
-</div>
 <?php
-    echo '<form id="categoryForm" action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+echo '<form id="categoryForm" action="' . $_SERVER['PHP_SELF'] . '" method="post">';
     echo '<select name="menuCategoriesDropDown" id="menuCategoriesDropDown">';
     echo '<option value="" disabled selected>Sort By</option>';
     foreach ($categories as $category){
@@ -186,15 +216,15 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     }
     echo '</select>';
     echo '<input type="submit" id="applyButton" value="Apply">';
-    echo '</form>';
-    if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['menuCategoriesDropDown']))
-    {
-        echo '<p class="sortedBy">' . strtoupper($categoryName) . '</p>';
-    }
+echo '</form>';
+if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['menuCategoriesDropDown']))
+{
+    echo '<p class="sortedBy">' . strtoupper($categoryName) . '</p>';
+}
 ?>
 <div class="menuItemsPageContainer">
 <?php
-    echo '<div class="menuItemImageContainer">';
+echo '<div class="menuItemImageContainer">';
     foreach($images as $image){
         echo '<a class="menuPostHREF" href="fullMenuPost.php?menuItemId=' . $image['menuitem_id'] . '">';
         echo '<div class="menuItem">';
@@ -210,7 +240,18 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         }
         echo '</div>';
     }
-    echo '</div>';
+echo '</div>';
+echo '<nav style="position: relative; top: 460px; right: 750px;">';
+    for ($i = 1; $i <= $totalPages; $i++){
+        if($_SERVER['REQUEST_METHOD'] !== 'POST'){
+            echo '<li id="pageNumbers" style="display:inline; margin: 0 5px;">';
+            echo '<a style="padding:10px; color:#000; text-decoration:none; font-size: 18px;" href="?page=' . $i . '">';
+            echo $i;
+            echo '</a>';
+            echo '</li>';
+        }
+    }
+echo '</nav>'; 
 ?>
 </div>
 </body>

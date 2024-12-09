@@ -11,6 +11,29 @@ require('connect.php');
 $menuItemId = filter_input(INPUT_GET, 'menuItemId', FILTER_SANITIZE_NUMBER_INT);
 $validated_menuItemId = filter_var($menuItemId, FILTER_VALIDATE_INT);
 
+// Full menu post handling
+$query = "SELECT menuitem_id, item_name, description, cost 
+            FROM menuitems
+            WHERE menuitem_id = :menuitem_id";
+
+$statement = $db->prepare($query);
+$statement->bindValue(':menuitem_id', $validated_menuItemId, PDO::PARAM_INT);
+$statement->execute();
+$menuPosts = $statement->fetchAll();
+
+$imageQuery = "SELECT images.image_path, images.menuitem_id
+        FROM images
+        LEFT JOIN menuitems
+        ON images.menuitem_id = :menuitem_id
+        WHERE images.image_path LIKE '%_medium%'
+        LIMIT 1";
+
+$imageStatement = $db->prepare($imageQuery);
+$imageStatement->bindValue(':menuitem_id', $validated_menuItemId, PDO::PARAM_INT);
+$imageStatement->execute();
+$images = $imageStatement->fetchAll();
+
+// Comment/review handling
 if(isset($_POST['submitReview'])){
     if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])){
         $guest_username = filter_input(INPUT_POST, 'guestNameInput', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
@@ -41,11 +64,12 @@ if(isset($_POST['submitReview'])){
 
 if(isset($_POST['deleteComment'])){
     $review_id = filter_input(INPUT_POST, 'review_id', FILTER_SANITIZE_NUMBER_INT);
+    $validated_reviewId = filter_input($review_id, FILTER_VALIDATE_INT);
 
     $deleteCommentQuery = "DELETE FROM reviews
                         WHERE review_id = :review_id";
     $deleteCommentStatement = $db->prepare($deleteCommentQuery);
-    $deleteCommentStatement->bindValue(':review_id', $review_id, PDO::PARAM_INT);
+    $deleteCommentStatement->bindValue(':review_id', $validated_reviewId, PDO::PARAM_INT);
     $deleteCommentStatement->execute();
 }
 
@@ -57,27 +81,6 @@ $commentsStatement = $db->prepare($commentsQuery);
 $commentsStatement->bindValue(':menuitem_id', $validated_menuItemId, PDO::PARAM_INT);
 $commentsStatement->execute();
 $comments = $commentsStatement->fetchAll();
-
-$query = "SELECT menuitem_id, item_name, description, cost 
-            FROM menuitems
-            WHERE menuitem_id = :menuitem_id";
-
-$statement = $db->prepare($query);
-$statement->bindValue(':menuitem_id', $validated_menuItemId, PDO::PARAM_INT);
-$statement->execute();
-$menuPosts = $statement->fetchAll();
-
-$imageQuery = "SELECT images.image_path, images.menuitem_id
-        FROM images
-        LEFT JOIN menuitems
-        ON images.menuitem_id = :menuitem_id
-        WHERE images.image_path LIKE '%_medium%'
-        LIMIT 1";
-
-$imageStatement = $db->prepare($imageQuery);
-$imageStatement->bindValue(':menuitem_id', $validated_menuItemId, PDO::PARAM_INT);
-$imageStatement->execute();
-$images = $imageStatement->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -85,7 +88,7 @@ $images = $imageStatement->fetchAll();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Post</title>
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
