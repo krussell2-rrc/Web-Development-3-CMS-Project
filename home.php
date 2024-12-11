@@ -21,6 +21,8 @@ if (isset($_SESSION['nonAdminUser'])) {
         header("Location: login.php");
         exit;
     }
+}else{
+    $welcomeMessage = "Welcome To The Cozy Cafe!";
 }
 ?>
 
@@ -35,19 +37,34 @@ if (isset($_SESSION['nonAdminUser'])) {
 </head>
 <body class="homeBody">
     <div class="homeHeader">
-        <p style="color: white; font-size: 15px;">
+        <?php if (!isset($_SESSION['nonAdminUser'])) { ?>
+            <p style="color: white; font-size: 15px; text-align: center;">
+                <?php echo $welcomeMessage; ?>
+            </p>
+            <form action="login.php" method="GET">
+                <input id="logInButton" type="submit" name="logInButton" value="Login" style="border-radius: 7px; position: relative; top: 52px; left: 530px;">
+            </form>
+        <?php } ?>
+        <?php if (isset($_SESSION['nonAdminUser'])) { ?>
+        <p style="color: white; font-size: 15px; text-align: center;">
             <?php echo $welcomeMessage; ?>
         </p>
-        <form action="login.php" method="GET">
-            <button id="accountButton" style="font-size:24px;"><i class="fa fa-user"></i></button>
-        </form>
-        <?php if (isset($_SESSION['user_email'])) { ?>
-        <form method="POST">
-            <input id="logOutButton" type="submit" name="logOutButton" value="Log out" style="border-radius: 7px; position: relative; top: 52px; left: 515px;">
-        </form>
+            <form method="POST">
+                <input id="logOutButton" type="submit" name="logOutButton" value="Logout" style="border-radius: 7px; position: relative; top: 52px; left: 500px;">
+            </form>
         <?php } ?>
     </div>
     <div class="homeImage">
+    </div>
+    <div class="homeNavDiv">
+        <nav class="homeNav">
+            <ul>
+                <a href="home.php">HOME</a>
+                <a href="menu.php">MENU</a>
+                <a href="">NEWS</a>
+                <a href="">ABOUT US</a>
+            </ul>
+        </nav>
     </div>
 </body>
 </html>

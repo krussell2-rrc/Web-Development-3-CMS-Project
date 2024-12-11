@@ -258,8 +258,8 @@ textarea{
 
 #categoryForm{
     position: relative;
-    top: 20px;
-    left: 10px;
+    top: 30px;
+    padding-left: 5px;
     padding-bottom: 20px;
 }
 
@@ -382,6 +382,29 @@ textarea{
     border: 1px #000 solid;
     background-color: #fff;
     color: #000;
+}
+
+.homeNavDiv{
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    background-color: #000;
+}
+
+.homeNav ul a{
+    text-decoration: none;
+    color: #fff;
+    font-family: Fraunces;
+    padding: 20px;
+    font-size: 13px;
+}
+
+.homeNav ul a:not(:last-child)::after{
+    content: "\007C"; 
+    margin-left: 5px;
+    color: #fff;
+    position: relative;
+    left: 20px;
 }
 
 

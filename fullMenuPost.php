@@ -7,6 +7,7 @@
 
 ****************/
 require('connect.php');
+session_start();
 
 $menuItemId = filter_input(INPUT_GET, 'menuItemId', FILTER_SANITIZE_NUMBER_INT);
 $validated_menuItemId = filter_var($menuItemId, FILTER_VALIDATE_INT);
@@ -34,30 +35,48 @@ $imageStatement->execute();
 $images = $imageStatement->fetchAll();
 
 // Comment/review handling
-if(isset($_POST['submitReview'])){
-    if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])){
+if (isset($_POST['submitReview'])) {
+    if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])) {
         $guest_username = filter_input(INPUT_POST, 'guestNameInput', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
         $guest_review = filter_input(INPUT_POST, 'commentsInput', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
-        if(strlen($guest_username) >= 1 && strlen($guest_review) >= 1){
+        if (strlen($guest_username) >= 1 && strlen($guest_review) >= 1) {
             $guestCommentQuery = "INSERT INTO reviews (guest_username, review, menuItem_id) VALUES (:guest_username, :review, :menuItem_id)";
             $guestCommentStatement = $db->prepare($guestCommentQuery);
             $guestCommentStatement->bindValue(':menuItem_id', $validated_menuItemId, PDO::PARAM_INT);
             $guestCommentStatement->bindValue(':guest_username', $guest_username);
             $guestCommentStatement->bindValue(':review', $guest_review);
             $guestCommentStatement->execute();
+
+            header("Location: fullMenuPost.php" . "?menuItemId=" . $validated_menuItemId);
         }
-    }else{
-        $user_username = $_SERVER['PHP_AUTH_USER'];
+    } elseif((isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) && (!isset($_SESSION['nonAdminUser']))){
+        $admin_username = $_SERVER['PHP_AUTH_USER'];
         $user_review = filter_input(INPUT_POST, 'commentsInput', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
-        if(strlen($user_username) >= 1 && strlen($user_review) >=1){
+        if (strlen($admin_username) >= 1 && strlen($user_review) >= 1) {
+            $userCommentQuery = "INSERT INTO reviews (admin_username, review, menuItem_id) VALUES (:admin_username, :review, :menuItem_id)";
+            $userCommentQuery = $db->prepare($userCommentQuery);
+            $userCommentQuery->bindValue(':menuItem_id', $validated_menuItemId, PDO::PARAM_INT);
+            $userCommentQuery->bindValue(':admin_username', $admin_username);
+            $userCommentQuery->bindValue(':review', $user_review);
+            $userCommentQuery->execute();
+
+            header("Location: fullMenuPost.php" . "?menuItemId=" . $validated_menuItemId);
+        }
+    }  elseif (isset($_SESSION['nonAdminUser'])) {
+        $user_username = $_SESSION['nonAdminUser'];
+        $user_review = filter_input(INPUT_POST, 'commentsInput', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+        if (strlen($user_username) >= 1 && strlen($user_review) >= 1) {
             $userCommentQuery = "INSERT INTO reviews (user_username, review, menuItem_id) VALUES (:user_username, :review, :menuItem_id)";
             $userCommentQuery = $db->prepare($userCommentQuery);
             $userCommentQuery->bindValue(':menuItem_id', $validated_menuItemId, PDO::PARAM_INT);
             $userCommentQuery->bindValue(':user_username', $user_username);
-            $userCommentQuery->bindValue(':review', $user_review );
+            $userCommentQuery->bindValue(':review', $user_review);
             $userCommentQuery->execute();
+
+            header("Location: fullMenuPost.php" . "?menuItemId=" . $validated_menuItemId);
         }
     }
 }
@@ -73,7 +92,7 @@ if(isset($_POST['deleteComment'])){
     $deleteCommentStatement->execute();
 }
 
-$commentsQuery = "SELECT user_username, guest_username, review, menuItem_id, created_at, review_id
+$commentsQuery = "SELECT admin_username, guest_username, user_username, review, menuItem_id, created_at, review_id
                 FROM reviews
                 WHERE menuItem_id = :menuitem_id
                 ORDER BY created_at DESC";
@@ -109,8 +128,8 @@ $comments = $commentsStatement->fetchAll();
 ?>
 <?php
     echo '<div id="commentsFormContainer">';
-    echo '<form id="commentsForm" method="post">';
-    if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])){
+    echo '<form id="commentsForm" method="POST">';
+    if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW']) && (!isset($_SESSION['nonAdminUser']))){
         echo '<label id="guestNameLabel" for="guestNameInput">Enter your name:</label>';
         echo '<input type="text" name="guestNameInput" id="guestName">';
     }
@@ -121,34 +140,47 @@ $comments = $commentsStatement->fetchAll();
     echo '</div>';
 ?>
 <?php
-    echo '<div id=commentsContainer>';
-        foreach($comments as $comment){
-            if($comment['menuItem_id'] == $validated_menuItemId){
-                if($comment['user_username']){
+echo '<div id=commentsContainer>';
+foreach ($comments as $comment) {
+    if ($comment['menuItem_id'] == $validated_menuItemId) {
+        if ($comment['admin_username']) {
+            echo '<h1 class="admin_username">' . $comment['admin_username'] . '</h1>';
+            echo '<p class="reviewPostTime">' . $comment['created_at'] . '</p>';
+            echo '<p class="user_review">' . $comment['review'] . '</p>';
+            if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']) && (!isset($_SESSION['nonAdminUser']))) {
+                echo '<form method="POST">';
+                echo '<input type="hidden" name="review_id" value="' . $comment['review_id'] . '">';
+                echo '<input type="submit" name="deleteComment" id="deleteCommentButton" value="Delete">';
+                echo '</form>';
+            }
+        } else {
+            if ($comment['guest_username']) {
+                echo '<h1 class="guest_username">' . $comment['guest_username'] . '</h1>';
+                echo '<p class="reviewPostTime">' . $comment['created_at'] . '</p>';
+                echo '<p class="user_review">' . $comment['review'] . '</p>';
+                if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']) && (!isset($_SESSION['nonAdminUser']))) {
+                    echo '<form method="POST">';
+                    echo '<input type="hidden" name="review_id" value="' . $comment['review_id'] . '">';
+                    echo '<input type="submit" name="deleteComment" id="deleteCommentButton" value="Delete">';
+                    echo '</form>';
+                }
+            } else {
+                if ($comment['user_username']) {
                     echo '<h1 class="user_username">' . $comment['user_username'] . '</h1>';
                     echo '<p class="reviewPostTime">' . $comment['created_at'] . '</p>';
                     echo '<p class="user_review">' . $comment['review'] . '</p>';
-                    if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])){
+                    if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']) && (!isset($_SESSION['nonAdminUser']))) {
                         echo '<form method="POST">';
                         echo '<input type="hidden" name="review_id" value="' . $comment['review_id'] . '">';
                         echo '<input type="submit" name="deleteComment" id="deleteCommentButton" value="Delete">';
                         echo '</form>';
                     }
                 }
-                if(!$comment['user_username']){
-                    echo '<h1 class="guest_username">' . $comment['guest_username'] . '</h1>';
-                    echo '<p class="reviewPostTime">' . $comment['created_at'] . '</p>';
-                    echo '<p class="user_review">' . $comment['review'] . '</p>';
-                    if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])){
-                            echo '<form method="POST">';
-                            echo '<input type="hidden" name="review_id" value="' . $comment['review_id'] . '">';
-                            echo '<input type="submit" name="deleteComment" id="deleteCommentButton" value="Delete">';
-                            echo '</form>';
-                        }
-                }
             }
         }
-    echo '</div>';
+    }
+}
+echo '</div>';
 ?>
 </body>
 </html>

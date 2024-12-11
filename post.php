@@ -11,6 +11,7 @@
 
 require('authenticate.php');
 require('connect.php');
+session_start();
 
 require 'C:\xampp\htdocs\Assignments\WebDevFinalProject\php-image-resize-master\php-image-resize-master\lib\ImageResize.php';
 require 'C:\xampp\htdocs\Assignments\WebDevFinalProject\php-image-resize-master\php-image-resize-master\lib\ImageResizeException.php';
@@ -61,6 +62,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                         ['image_path' => 'uploads/' . $imageName . '_thumbnail' . '.' . $imageExtension]
                     ];
 
+
                     $menuItemImageQuery = "INSERT INTO images (menuitem_id, image_path, image_name) values (:menuitem_id, :image_path, :image_name)";
                     $menuItemImageStatement = $db->prepare($menuItemImageQuery);
                     $menuItemImageStatement->bindValue(':menuitem_id', $menuItemID);
@@ -78,20 +80,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     }
 }
 
-// Builds a path string that uses slashes appropriate for our OS.
-function file_upload_path($original_filename, $upload_subfolder_name = 'uploads'){
-    // Getting the name of the current folder
-    $current_folder = dirname(__FILE__);
-
-    // Build an array of paths segment names to be joins using OS specific slashes.
-    $path_segments = [$current_folder, $upload_subfolder_name, basename($original_filename)];
-
-    // The DIRECTORY_SEPARATOR constant is OS specific.
-    return join(DIRECTORY_SEPARATOR, $path_segments);
-}
-
-// Checks to see if the file uploaded is an image/pdf then moves it to the uploads subfolder.
-function file_is_an_image_or_pdf($temporary_path, $new_path){
+// Checks to see if the file uploaded is an image then moves it to the uploads subfolder.
+function file_is_an_image($temporary_path, $new_path){
     $allowed_file_mime_types = ['image/jpeg', 'image/png'];
     $allowed_file_extensions = ['jpg', 'jpeg', 'png'];
 
@@ -107,70 +97,60 @@ function file_is_an_image_or_pdf($temporary_path, $new_path){
 
     $file_upload_detected = (isset($_FILES['file']) && $_FILES['file']['error'] === 0);
     $upload_error_detected = (isset($_FILES['file']) && $_FILES['file']['error'] > 0);
-    $errorMessage = "";
 
     if($file_upload_detected){
-        $filename = $_FILES['file']['name'];
-        $temporary_file_path = $_FILES['file']['tmp_name'];
-        
-        $actual_image_extension = pathinfo($filename, PATHINFO_EXTENSION);
-        $actual_image_mime_type = mime_content_type($_FILES['file']['tmp_name']);
-        $allowed_image_mime_types = ['image/gif', 'image/jpeg', 'image/png'];
-
-        // Moves the uploaded file to the uploads folder
-        $new_file_path = file_upload_path($filename);
-        if(file_is_an_image_or_pdf($temporary_file_path, $new_file_path)){
-            move_uploaded_file($temporary_file_path, $new_file_path);
-        }else{
-            $errorMessage = "Only JPG, JPEG, PNG files are allowed.";
-        }
-
         // Checks the uploaded image for "image-ness" 
         // If valid, it duplicates and resizes the image to 400px wide for the medium version
         // and 50px wide for the thumbnail version, then saves both to the uploads folder.
-        if(in_array($actual_image_mime_type, $allowed_image_mime_types)){
-            $image_name = pathinfo($_FILES['file']['name'], PATHINFO_FILENAME);
+        $image_name = pathinfo($_FILES['file']['name'], PATHINFO_FILENAME);
 
-            $mediumImage = new ImageResize($new_file_path);
-            $mediumImage->quality_png = 100;
-            $mediumImage->crop(400, 300);
-            $mediumImage_filePath = 'uploads/' . $image_name . '_medium' . '.' . $actual_image_extension;
-            $mediumImage->save($mediumImage_filePath);
+        $mediumImage = new ImageResize($new_file_path);
+        $mediumImage->quality_png = 100;
+        $mediumImage->crop(400, 300);
+        $mediumImage_filePath = 'uploads/' . $image_name . '_medium' . '.' . $actual_image_extension;
+        $mediumImage->save($mediumImage_filePath);
 
-            $thumbnailImage = new ImageResize($new_file_path);
-            $thumbnailImage->resizeToWidth(50);
-            $thumbnailImage_filePath = 'uploads/' . $image_name . '_thumbnail' . '.' . $actual_image_extension;
-            $thumbnailImage->save($thumbnailImage_filePath);
-        }
+        $thumbnailImage = new ImageResize($new_file_path);
+        $thumbnailImage->resizeToWidth(50);
+        $thumbnailImage_filePath = 'uploads/' . $image_name . '_thumbnail' . '.' . $actual_image_extension;
+        $thumbnailImage->save($thumbnailImage_filePath);
     }
 ?>
 
-<?php if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])){echo ?>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="main.css">
-        <title>New Post</title>
-        <script src="https://cdn.tiny.cloud/1/820gg2umfmem63zoi1rxljkbeur1qnneg18i5m4u764kk8pi/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
-    </head>
-    <body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="main.css">
+    <title>New Post</title>
+    <script src="https://cdn.tiny.cloud/1/820gg2umfmem63zoi1rxljkbeur1qnneg18i5m4u764kk8pi/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+</head>
+<body>
+<?php
+if (isset($_SESSION['nonAdminUser'])) {
+    header("Location: home.php");
+} else {
+    ?>
     <h1>New Page Post</h1>
     <form method="POST" enctype="multipart/form-data">
         <div class="postFormContainer">
             <label id="titlelabel" for="titletextbox">Title:</label>
-            <input name="title" id="titletextbox" type="text" >
+            <input name="title" id="titletextbox" type="text" required>
 
             <label id="contentlabel" for="contenttextarea">Content:</label>
             <textarea name="content" id="contenttextarea"></textarea>
+
             <!-- TinyMCE Initialization -->
             <script>
-                document.addEventListener('DOMContentLoaded', function() {
+                document.addEventListener('DOMContentLoaded', function () {
                     tinymce.init({
-                        selector: '#contenttextarea', // Targeting the specific textarea
+                        selector: '#contenttextarea',
                         plugins: [
-                            'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount'
+                            'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 
+                            'image', 'link', 'lists', 'media', 'searchreplace', 
+                            'table', 'visualblocks', 'wordcount'
                         ],
                         toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
                     });
@@ -180,16 +160,17 @@ function file_is_an_image_or_pdf($temporary_path, $new_path){
             <input type="radio" name="postType" value="menu" id="menuPostType">
             <label for="menuPostType">New Menu Post</label>
 
-            <?php
-                echo '<label id="categoriesLabel" for="categoriesDropDown">Categories:</label>';
-                echo '<select name="categoriesDropDown" id="categoriesDropDown">';
-                foreach ($categories as $category) {
-                    echo '<option value="' . $category['category_id'] . '">' . $category['category_name'] . '</option>';
-                }
-                echo '</select>';
-            ?>
+            <label id="categoriesLabel" for="categoriesDropDown">Categories:</label>
+            <select name="categoriesDropDown" id="categoriesDropDown">
+                <?php foreach ($categories as $category) { ?>
+                    <option value="<?php echo $category['category_id']; ?>">
+                        <?php echo $category['category_name']; ?>
+                    </option>
+                <?php } ?>
+            </select>
 
             <a id="categoryHREF" href="category.php">Edit Categories & Create New Categories</a>
+            
             <label id="costLabel" for="menuItemCostInput" style="display:none;">Cost:</label>
             <input type="text" name="menuItemCostInput" id="menuItemCostInput" style="display:none;">
 
@@ -197,9 +178,14 @@ function file_is_an_image_or_pdf($temporary_path, $new_path){
             <input type="submit" id="submitButton" value="Create Post">
         </div>
     </form>
-
     <script src="post.js"></script>
-    </body>
-    </html>
-<?php } ?>
+    <?php
+}
+?>
+</body>
+</html>
+
+
+
+
 

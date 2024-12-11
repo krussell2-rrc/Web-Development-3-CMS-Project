@@ -185,8 +185,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 <img class="logo" src="defaultimages/cozycafe-logo.png" alt="The Cozy Café Logo">
     <nav class="navigation">
         <ul>
-            <a href="">HOME</a>
-            <a href="">MENU</a>
+            <a href="home.php">HOME</a>
+            <a href="menu.php">MENU</a>
             <a href="">NEWS</a>
             <a href="">ABOUT US</a>
         </ul>
