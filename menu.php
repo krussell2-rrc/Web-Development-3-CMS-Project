@@ -19,10 +19,6 @@ $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $rows = 6;
 $offset = ($page - 1) * $rows;
 
-$totalRowsQuery = "SELECT COUNT(*) FROM menuitems";
-$totalRows = $db->query($totalRowsQuery)->fetchColumn();
-$totalPages = ceil($totalRows / $rows);
-
 // Getting default menu items without any sorting from the database
 $menuItemQuery = "SELECT menuitem_id, item_name, description, cost FROM menuitems LIMIT :limit OFFSET :offset";
 
@@ -114,11 +110,15 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             WHERE images.image_path LIKE '%_medium%' AND menuitems.item_name LIKE :item_name
             LIMIT :limit OFFSET :offset";
 
+            $totalRowsQuery = "SELECT COUNT(*) FROM menuitems WHERE item_name LIKE :item_name";
+
             $menuItemStatement = $db->prepare($menuItemQuery);
             $imageStatement = $db->prepare($imageQuery);
+            $totalRowsStatement = $db->prepare($totalRowsQuery);
             
             $menuItemStatement->bindParam(':item_name', $searchTerm, PDO::PARAM_STR);
             $imageStatement->bindParam(':item_name', $searchTerm, PDO::PARAM_STR);
+            $totalRowsStatement->bindParam(':item_name', $searchTerm, PDO::PARAM_STR);
 
             $menuItemStatement->bindValue(':limit', $rows, PDO::PARAM_INT);
             $menuItemStatement->bindValue(':offset', $offset, PDO::PARAM_INT);
@@ -127,9 +127,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             
             $menuItemStatement->execute();
             $imageStatement->execute();
+            $totalRowsStatement->execute();
     
             $menu_items = $menuItemStatement->fetchAll();
             $images = $imageStatement->fetchAll();
+            $totalRows = $totalRowsStatement->fetchColumn();
+            $totalPages = ceil($totalRows / $rows);
         }elseif($validated_categoryId != 100){
             $menuItemQuery = 
             "SELECT menuitem_id, item_name, description, cost, category_id
@@ -242,15 +245,15 @@ echo '<div class="menuItemImageContainer">';
     }
 echo '</div>';
 echo '<nav style="position: relative; top: 460px; right: 750px;">';
-    for ($i = 1; $i <= $totalPages; $i++){
-        if($_SERVER['REQUEST_METHOD'] !== 'POST'){
-            echo '<li id="pageNumbers" style="display:inline; margin: 0 5px;">';
-            echo '<a style="padding:10px; color:#000; text-decoration:none; font-size: 18px;" href="?page=' . $i . '">';
-            echo $i;
-            echo '</a>';
-            echo '</li>';
+        if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['menuSearch'])){
+                for ($i = 1; $i <= $totalPages; $i++){
+                echo '<li id="pageNumbers" style="display:inline; margin: 0 5px;">';
+                echo '<a style="padding:10px; color:#000; text-decoration:none; font-size: 18px;" href="?page=' . $i . '">';
+                echo $i;
+                echo '</a>';
+                echo '</li>';
+            }
         }
-    }
 echo '</nav>'; 
 ?>
 </div>

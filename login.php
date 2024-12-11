@@ -31,7 +31,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         
         if(password_verify($password, $userPassword)){
             $message = "You've successfully logged in!";
-            $_SESSION['user_email'] = $email;
+            $_SESSION['nonAdminUser'] = $email;
             header("Location: home.php");
 
         }else{

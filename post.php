@@ -145,61 +145,61 @@ function file_is_an_image_or_pdf($temporary_path, $new_path){
     }
 ?>
 
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="main.css">
-    <title>New Post</title>
-    <script src="https://cdn.tiny.cloud/1/820gg2umfmem63zoi1rxljkbeur1qnneg18i5m4u764kk8pi/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
-</head>
-<body>
-<h1>New Page Post</h1>
-<form method="POST" enctype="multipart/form-data">
-    <div class="postFormContainer">
-        <label id="titlelabel" for="titletextbox">Title:</label>
-        <input name="title" id="titletextbox" type="text" >
+<?php if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])){echo ?>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="main.css">
+        <title>New Post</title>
+        <script src="https://cdn.tiny.cloud/1/820gg2umfmem63zoi1rxljkbeur1qnneg18i5m4u764kk8pi/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+    </head>
+    <body>
+    <h1>New Page Post</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="postFormContainer">
+            <label id="titlelabel" for="titletextbox">Title:</label>
+            <input name="title" id="titletextbox" type="text" >
 
-        <label id="contentlabel" for="contenttextarea">Content:</label>
-        <textarea name="content" id="contenttextarea"></textarea>
-        <!-- TinyMCE Initialization -->
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                tinymce.init({
-                    selector: '#contenttextarea', // Targeting the specific textarea
-                    plugins: [
-                        'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount'
-                    ],
-                    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+            <label id="contentlabel" for="contenttextarea">Content:</label>
+            <textarea name="content" id="contenttextarea"></textarea>
+            <!-- TinyMCE Initialization -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    tinymce.init({
+                        selector: '#contenttextarea', // Targeting the specific textarea
+                        plugins: [
+                            'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount'
+                        ],
+                        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+                    });
                 });
-            });
-        </script>
+            </script>
 
-        <input type="radio" name="postType" value="menu" id="menuPostType">
-        <label for="menuPostType">New Menu Post</label>
+            <input type="radio" name="postType" value="menu" id="menuPostType">
+            <label for="menuPostType">New Menu Post</label>
 
-        <?php
-            echo '<label id="categoriesLabel" for="categoriesDropDown">Categories:</label>';
-            echo '<select name="categoriesDropDown" id="categoriesDropDown">';
-            foreach ($categories as $category) {
-                echo '<option value="' . $category['category_id'] . '">' . $category['category_name'] . '</option>';
-            }
-            echo '</select>';
-        ?>
+            <?php
+                echo '<label id="categoriesLabel" for="categoriesDropDown">Categories:</label>';
+                echo '<select name="categoriesDropDown" id="categoriesDropDown">';
+                foreach ($categories as $category) {
+                    echo '<option value="' . $category['category_id'] . '">' . $category['category_name'] . '</option>';
+                }
+                echo '</select>';
+            ?>
 
-        <a id="categoryHREF" href="category.php">Edit Categories & Create New Categories</a>
-        <label id="costLabel" for="menuItemCostInput" style="display:none;">Cost:</label>
-        <input type="text" name="menuItemCostInput" id="menuItemCostInput" style="display:none;">
+            <a id="categoryHREF" href="category.php">Edit Categories & Create New Categories</a>
+            <label id="costLabel" for="menuItemCostInput" style="display:none;">Cost:</label>
+            <input type="text" name="menuItemCostInput" id="menuItemCostInput" style="display:none;">
 
-        <input type="file" name="file" id="file">
-        <input type="submit" id="submitButton" value="Create Post">
-    </div>
-</form>
+            <input type="file" name="file" id="file">
+            <input type="submit" id="submitButton" value="Create Post">
+        </div>
+    </form>
 
-<script src="post.js"></script>
-</body>
-</html>
-
-
+    <script src="post.js"></script>
+    </body>
+    </html>
+<?php } ?>
 

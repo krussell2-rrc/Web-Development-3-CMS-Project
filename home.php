@@ -11,8 +11,8 @@ session_start();
 
 $welcomeMessage = "";
 
-if (isset($_SESSION['user_email'])) {
-    $welcomeMessage = "You've successfully signed in, " . $_SESSION['user_email'] . "!";
+if (isset($_SESSION['nonAdminUser'])) {
+    $welcomeMessage = "You've successfully signed in, " . $_SESSION['nonAdminUser'] . "!";
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logOutButton'])) {
         $_SESSION = array();

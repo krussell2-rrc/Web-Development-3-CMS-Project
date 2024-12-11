@@ -24,6 +24,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             $newUserStatement->bindValue(':email', $email);
             $newUserStatement->bindValue(':password', $userPassword);
             $newUserStatement->execute();
+
+            header("Location: login.php");
         }else{
             $errorMessage = "The re-entered password does not match.<br>Please try again.";
         }
