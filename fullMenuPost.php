@@ -36,54 +36,52 @@ $images = $imageStatement->fetchAll();
 
 // Comment/review handling
 if (isset($_POST['submitReview'])) {
-    if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])) {
-        $guest_username = filter_input(INPUT_POST, 'guestNameInput', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-        $guest_review = filter_input(INPUT_POST, 'commentsInput', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+    if ($_POST["captcha_code"] == $_SESSION["captcha_code"]) {
+        if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])) {
+            $guest_username = filter_input(INPUT_POST, 'guestNameInput', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $guest_review = filter_input(INPUT_POST, 'commentsInput', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
-        if (strlen($guest_username) >= 1 && strlen($guest_review) >= 1) {
-            $guestCommentQuery = "INSERT INTO reviews (guest_username, review, menuItem_id) VALUES (:guest_username, :review, :menuItem_id)";
-            $guestCommentStatement = $db->prepare($guestCommentQuery);
-            $guestCommentStatement->bindValue(':menuItem_id', $validated_menuItemId, PDO::PARAM_INT);
-            $guestCommentStatement->bindValue(':guest_username', $guest_username);
-            $guestCommentStatement->bindValue(':review', $guest_review);
-            $guestCommentStatement->execute();
+            if (strlen($guest_username) >= 1 && strlen($guest_review) >= 1) {
+                $guestCommentQuery = "INSERT INTO reviews (guest_username, review, menuItem_id) VALUES (:guest_username, :review, :menuItem_id)";
+                $guestCommentStatement = $db->prepare($guestCommentQuery);
+                $guestCommentStatement->bindValue(':menuItem_id', $validated_menuItemId, PDO::PARAM_INT);
+                $guestCommentStatement->bindValue(':guest_username', $guest_username);
+                $guestCommentStatement->bindValue(':review', $guest_review);
+                $guestCommentStatement->execute();
+            }
+        } elseif((isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) && (!isset($_SESSION['nonAdminUser']))){
+            $admin_username = $_SERVER['PHP_AUTH_USER'];
+            $user_review = filter_input(INPUT_POST, 'commentsInput', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
-            header("Location: fullMenuPost.php" . "?menuItemId=" . $validated_menuItemId);
+            if (strlen($admin_username) >= 1 && strlen($user_review) >= 1) {
+                $userCommentQuery = "INSERT INTO reviews (admin_username, review, menuItem_id) VALUES (:admin_username, :review, :menuItem_id)";
+                $userCommentQuery = $db->prepare($userCommentQuery);
+                $userCommentQuery->bindValue(':menuItem_id', $validated_menuItemId, PDO::PARAM_INT);
+                $userCommentQuery->bindValue(':admin_username', $admin_username);
+                $userCommentQuery->bindValue(':review', $user_review);
+                $userCommentQuery->execute();
+            }
+        }  elseif (isset($_SESSION['nonAdminUser'])) {
+            $user_username = $_SESSION['nonAdminUser'];
+            $user_review = filter_input(INPUT_POST, 'commentsInput', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+            if (strlen($user_username) >= 1 && strlen($user_review) >= 1) {
+                $userCommentQuery = "INSERT INTO reviews (user_username, review, menuItem_id) VALUES (:user_username, :review, :menuItem_id)";
+                $userCommentQuery = $db->prepare($userCommentQuery);
+                $userCommentQuery->bindValue(':menuItem_id', $validated_menuItemId, PDO::PARAM_INT);
+                $userCommentQuery->bindValue(':user_username', $user_username);
+                $userCommentQuery->bindValue(':review', $user_review);
+                $userCommentQuery->execute();
+            }
         }
-    } elseif((isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) && (!isset($_SESSION['nonAdminUser']))){
-        $admin_username = $_SERVER['PHP_AUTH_USER'];
-        $user_review = filter_input(INPUT_POST, 'commentsInput', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-
-        if (strlen($admin_username) >= 1 && strlen($user_review) >= 1) {
-            $userCommentQuery = "INSERT INTO reviews (admin_username, review, menuItem_id) VALUES (:admin_username, :review, :menuItem_id)";
-            $userCommentQuery = $db->prepare($userCommentQuery);
-            $userCommentQuery->bindValue(':menuItem_id', $validated_menuItemId, PDO::PARAM_INT);
-            $userCommentQuery->bindValue(':admin_username', $admin_username);
-            $userCommentQuery->bindValue(':review', $user_review);
-            $userCommentQuery->execute();
-
-            header("Location: fullMenuPost.php" . "?menuItemId=" . $validated_menuItemId);
-        }
-    }  elseif (isset($_SESSION['nonAdminUser'])) {
-        $user_username = $_SESSION['nonAdminUser'];
-        $user_review = filter_input(INPUT_POST, 'commentsInput', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-
-        if (strlen($user_username) >= 1 && strlen($user_review) >= 1) {
-            $userCommentQuery = "INSERT INTO reviews (user_username, review, menuItem_id) VALUES (:user_username, :review, :menuItem_id)";
-            $userCommentQuery = $db->prepare($userCommentQuery);
-            $userCommentQuery->bindValue(':menuItem_id', $validated_menuItemId, PDO::PARAM_INT);
-            $userCommentQuery->bindValue(':user_username', $user_username);
-            $userCommentQuery->bindValue(':review', $user_review);
-            $userCommentQuery->execute();
-
-            header("Location: fullMenuPost.php" . "?menuItemId=" . $validated_menuItemId);
-        }
+    }else{
+        $comment = $_POST["commentsInput"];
     }
 }
 
 if(isset($_POST['deleteComment'])){
     $review_id = filter_input(INPUT_POST, 'review_id', FILTER_SANITIZE_NUMBER_INT);
-    $validated_reviewId = filter_input($review_id, FILTER_VALIDATE_INT);
+    $validated_reviewId = filter_var($review_id, FILTER_VALIDATE_INT);
 
     $deleteCommentQuery = "DELETE FROM reviews
                         WHERE review_id = :review_id";
@@ -112,6 +110,7 @@ $comments = $commentsStatement->fetchAll();
 </head>
 <body>
 <?php
+    echo '<a style="background-color:red; color:white; text-decoration :none; position: relative; top:140px; left:340px;" href="post.php">Edit Post</a>';
     echo '<div>';
     foreach($menuPosts as $menuPost){
         echo '<h1>' . $menuPost['item_name'] . '</h1>';
@@ -129,12 +128,17 @@ $comments = $commentsStatement->fetchAll();
 <?php
     echo '<div id="commentsFormContainer">';
     echo '<form id="commentsForm" method="POST">';
-    if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW']) && (!isset($_SESSION['nonAdminUser']))){
+    if (!isset($_SERVER['PHP_AUTH_USER']) && !isset($_SERVER['PHP_AUTH_PW']) && (!isset($_SESSION['nonAdminUser']))){
         echo '<label id="guestNameLabel" for="guestNameInput">Enter your name:</label>';
         echo '<input type="text" name="guestNameInput" id="guestName">';
     }
     echo '<label id="commentsLabel" for="commentsInput">Share Your Thoughts:</label>';
-    echo '<textarea name="commentsInput" id="commentsInput" placeholder="Post a review"></textarea>';
+    echo '<textarea name="commentsInput" id="commentsInput" placeholder="Post a review">' . (isset($comment) ? $comment : '') . '</textarea>';
+
+    echo '<label for="captcha">Enter the CAPTCHA:</label>';
+    echo '<img src="tweeks_captcha\captcha\captcha_gen.php" alt="CAPTCHA Image">';
+    echo '<input type="text" name="captcha_code" id="captcha">';
+
     echo '<input name="submitReview" type="submit" value="Submit Review">';
     echo '</form>';
     echo '</div>';

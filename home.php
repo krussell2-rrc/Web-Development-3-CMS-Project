@@ -18,7 +18,7 @@ if (isset($_SESSION['nonAdminUser'])) {
         $_SESSION = array();
         session_destroy();
 
-        header("Location: login.php");
+        header("Location: home.php");
         exit;
     }
 }else{
@@ -38,7 +38,7 @@ if (isset($_SESSION['nonAdminUser'])) {
 <body class="homeBody">
     <div class="homeHeader">
         <?php if (!isset($_SESSION['nonAdminUser'])) { ?>
-            <p style="color: white; font-size: 15px; text-align: center;">
+            <p style="color: white; font-size: 15px; text-align: center; font-family: Fraunces;">
                 <?php echo $welcomeMessage; ?>
             </p>
             <form action="login.php" method="GET">
@@ -46,7 +46,7 @@ if (isset($_SESSION['nonAdminUser'])) {
             </form>
         <?php } ?>
         <?php if (isset($_SESSION['nonAdminUser'])) { ?>
-        <p style="color: white; font-size: 15px; text-align: center;">
+        <p style="color: white; font-size: 15px; text-align: center; font-family: Fraunces; ">
             <?php echo $welcomeMessage; ?>
         </p>
             <form method="POST">

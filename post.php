@@ -164,7 +164,7 @@ function file_is_an_image($temporary_path, $new_path){
 <body>
 <?php
 if (isset($_SESSION['nonAdminUser'])) {
-    header("Location: menu.php");
+    header("Location: home.php");
 } else {
     ?>
     <h1>New Page Post</h1>

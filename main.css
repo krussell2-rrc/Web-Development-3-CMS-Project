@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Courgette&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Ahom&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap');
 /*******w******** 
     Overall website css
 ****************/
@@ -11,7 +11,7 @@
     height: 100%;
     background-color: #fff;
     background-image: 
-        url(https://img.freepik.com/free-photo/top-view-yogurt-spoon-with-copy-space_23-2148529386.jpg?t=st=1733334542~exp=1733338142~hmac=2292106f5ec68f2b48c33721277aff25d0b6fb940b03f9c40829006ba010d10a&w=1380);
+        url("defaultimages/barista-cafe-making-coffee-preparation-service-concept_blurred.png");
     background-blend-mode: multiply;
     background-size: cover;
 }
@@ -195,27 +195,26 @@ textarea{
     text-decoration: underline;
     width: 100px;
     position: relative;
-    color: #000;
+    color: #fff;
 }
 
 .theCozyCafeMenuBanner {
-    background-color: black;
+    background-color:  #e5be8f;
     width: 100%;
     padding: 10px 0;
     align-items: center;
     display: flex;
     justify-content: center;
+    border-top: #fff 1px solid;
     border-bottom: #fff 1px solid;
-
 }
 
 .theCozyCafeMenu {
-    color: white;
+    color: #fff;
     font-family: Fraunces;
-    font-size: 30px;
+    font-size: 33px;
     padding-left: 30px;
     margin: 0; 
-    font-weight: bolder;
     letter-spacing: 0.2em;
 }
 
@@ -232,8 +231,8 @@ textarea{
 
 .sortedBy{
     text-align: center;
-    color:brown;
-    font-size: 45px;
+    color:#cecece;
+    font-size: 40px;
     letter-spacing: 0.1em;
     text-decoration: underline;
     padding-bottom: 40px;
@@ -241,8 +240,6 @@ textarea{
     font-family: Fraunces;
     height: 20PX;
     position: relative;
-    font-weight: bold;
-    font-style: italic;
 }
 
 .menuPostHREF {

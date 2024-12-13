@@ -7,6 +7,7 @@
 
 ****************/
 require('connect.php');
+session_start();
 
 // Fetching categories from the database
 $categoriesQuery = "SELECT category_id, category_name FROM categories";
@@ -206,6 +207,11 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             <i style="font-size:15px" class="fa">&#xf002;</i>
         </button>
     </form>
+    <?php 
+    if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW']) && (!isset($_SESSION['nonAdminUser']))) {
+        echo '<a style="background-color:red; color:white; text-decoration :none; position: relative; top:150px; left:250px;" href="post.php">Create A New Post</a>';
+        }
+    ?>
 </div>
 <div class="theCozyCafeMenuBanner">
     <p class ="theCozyCafeMenu">THE COZY CAFÉ MENU</p>
@@ -220,10 +226,10 @@ echo '<form id="categoryForm" action="' . $_SERVER['PHP_SELF'] . '" method="post
     echo '</select>';
     echo '<input type="submit" id="applyButton" value="Apply">';
 echo '</form>';
-if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['menuCategoriesDropDown']))
-{
-    echo '<p class="sortedBy">' . strtoupper($categoryName) . '</p>';
-}
+    if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['menuCategoriesDropDown']))
+    {
+        echo '<p class="sortedBy">' . strtoupper($categoryName) . '</p>';
+    }
 ?>
 <div class="menuItemsPageContainer">
 <?php
